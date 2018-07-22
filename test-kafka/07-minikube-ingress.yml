@@ -1,0 +1,16 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kafka-ingress
+spec:
+  backend:
+    serviceName: default-http-backend
+    servicePort: 80
+  rules:
+  - host:
+    http:
+      paths:
+      - path: /kafka
+        backend:
+          serviceName: broker
+          servicePort: 9092
