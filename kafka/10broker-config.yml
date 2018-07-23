@@ -77,7 +77,7 @@ data:
 
     ############################# Socket Server Settings #############################
 
-    # The address the socket server listens on. It will get the value returned from 
+    # The address the socket server listens on. It will get the value returned from
     # java.net.InetAddress.getCanonicalHostName() if not configured.
     #   FORMAT:
     #     listeners = listener_name://host_name:port
@@ -86,7 +86,7 @@ data:
     #listeners=PLAINTEXT://:9092
     listeners=OUTSIDE://:9094,PLAINTEXT://:9092
 
-    # Hostname and port the broker will advertise to producers and consumers. If not set, 
+    # Hostname and port the broker will advertise to producers and consumers. If not set,
     # it uses the value for "listeners" if configured.  Otherwise, it will use the value
     # returned from java.net.InetAddress.getCanonicalHostName().
     #advertised.listeners=PLAINTEXT://your.host.name:9092
@@ -98,10 +98,10 @@ data:
     inter.broker.listener.name=PLAINTEXT
 
     # The number of threads that the server uses for receiving requests from the network and sending responses to the network
-    #num.network.threads=3
+    num.network.threads=3
 
     # The number of threads that the server uses for processing requests, which may include disk I/O
-    #num.io.threads=8
+    num.io.threads=8
 
     # The send buffer (SO_SNDBUF) used by the socket server
     #socket.send.buffer.bytes=102400
@@ -151,14 +151,14 @@ data:
 
     # A size-based retention policy for logs. Segments are pruned from the log unless the remaining
     # segments drop below log.retention.bytes. Functions independently of log.retention.hours.
-    #log.retention.bytes=1073741824
+    log.retention.bytes=1073741824
 
     # The maximum size of a log segment file. When this size is reached a new log segment will be created.
-    #log.segment.bytes=1073741824
+    log.segment.bytes=1073741824
 
     # The interval at which log segments are checked to see if they can be deleted according
     # to the retention policies
-    #log.retention.check.interval.ms=300000
+    log.retention.check.interval.ms=300000
 
     ############################# Zookeeper #############################
 
@@ -170,7 +170,7 @@ data:
     zookeeper.connect=zookeeper:2181
 
     # Timeout in ms for connecting to zookeeper
-    #zookeeper.connection.timeout.ms=6000
+    zookeeper.connection.timeout.ms=6000
 
 
     ############################# Group Coordinator Settings #############################
