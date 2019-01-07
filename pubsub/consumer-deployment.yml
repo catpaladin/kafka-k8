@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+  namespace: pubsub
+spec:
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+    spec:
+      containers:
+      - name: consumer
+        image: catpaladin/consumer@sha256:c108a5c4ff3976223623f35f573cdf145298656d5f4269edf1d6c04460b8547b
+        command: ["sh", "-c", "tail -f /dev/null"]
+        resources:
+          requests:
+            cpu: 10m
+            memory: 100Mi
+          limits:
+            cpu: 10m
+            memory: 200Mi
+        env:
+          - name: ZOOKEEPER_HOST
+            value: zookeeper.kafka
+          - name: ZOOKEEPER_PORT
+            value: "2181"
+          - name: CONSUMER_GROUP
+            value: zbanana
+          - name: KAFKA_TOPIC
+            value: banana
