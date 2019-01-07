@@ -1,83 +1,70 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"time"
+	"os/signal"
 
 	"github.com/Shopify/sarama"
-	"github.com/wvanbergen/kafka/consumergroup"
 )
 
 type ConsumerConfig struct {
-	zookeeperHost string
-	zookeeperPort string
-	consumerGroup string
-	kafkaTopic    string
+	kafkaHost  string
+	kafkaPort  string
+	kafkaTopic string
 }
 
 var subConfig = ConsumerConfig{
-	zookeeperHost: getEnv("ZOOKEEPER_HOST", "zookeeper.kafka"),
-	zookeeperPort: getEnv("ZOOKEEPER_PORT", "2181"),
-	consumerGroup: getEnv("CONSUMER_GROUP", "zbanana"),
-	kafkaTopic:    getEnv("KAFKA_TOPIC", "banana"),
+	kafkaHost:  getEnv("KAFKA_HOST", "broker.kafka"),
+	kafkaPort:  getEnv("KAFKA_PORT", "9092"),
+	kafkaTopic: getEnv("KAFKA_TOPIC", "banana"),
 }
 
 func main() {
-	// setup sarama log to stdout
-	sarama.Logger = log.New(os.Stdout, "", log.Ltime)
+	broker := subConfig.kafkaHost + ":" + subConfig.kafkaPort
 
-	// init consumer
-	cg, err := initConsumer()
+	// Simple sarama consumer
+	// https://godoc.org/github.com/Shopify/sarama#example-Consumer
+	consumer, err := sarama.NewConsumer([]string{broker}, nil)
 	if err != nil {
-		fmt.Println("Error consumer goup: ", err.Error())
-		os.Exit(1)
-	}
-	defer cg.Close()
-
-	// run consumer
-	consume(cg)
-}
-
-func initConsumer() (*consumergroup.ConsumerGroup, error) {
-	zoo := subConfig.zookeeperHost + ":" + subConfig.zookeeperPort
-
-	// consumer config
-	config := consumergroup.NewConfig()
-	config.Offsets.Initial = sarama.OffsetOldest
-	config.Offsets.ProcessingTimeout = 10 * time.Second
-
-	// join to consumer group
-	cg, err := consumergroup.JoinConsumerGroup(subConfig.consumerGroup, []string{subConfig.kafkaTopic}, []string{zoo}, config)
-	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
-	return cg, err
-}
+	defer func() {
+		if err := consumer.Close(); err != nil {
+			log.Fatalln(err)
+		}
+	}()
 
-func consume(cg *consumergroup.ConsumerGroup) {
+	partitionConsumer, err := consumer.ConsumePartition(subConfig.kafkaTopic, 0, sarama.OffsetOldest)
+	if err != nil {
+		panic(err)
+	}
+
+	defer func() {
+		if err := partitionConsumer.Close(); err != nil {
+			log.Fatalln(err)
+		}
+	}()
+
+	// Trap SIGINT to trigger a shutdown.
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, os.Interrupt)
+
+	consumed := 0
+ConsumerLoop:
 	for {
 		select {
-		case msg := <-cg.Messages():
-			// messages coming through chanel
-			// only take messages from subscribed topic
-			if msg.Topic != subConfig.kafkaTopic {
-				continue
-			}
-
-			fmt.Println("Topic: ", msg.Topic)
-			fmt.Println("Value: ", string(msg.Value))
-
-			// commit to zookeeper that message is read
-			// this prevent read message multiple times after restart
-			err := cg.CommitUpto(msg)
-			if err != nil {
-				fmt.Println("Error commit zookeeper: ", err.Error())
-			}
+		case msg := <-partitionConsumer.Messages():
+			log.Printf("Consumed message offset %d\n", msg.Offset)
+			log.Printf("Message: %s\n", msg.Value)
+			consumed++
+		case <-signals:
+			break ConsumerLoop
 		}
 	}
+
+	log.Printf("Consumed: %d\n", consumed)
 }
 
 func getEnv(key, notset string) string {

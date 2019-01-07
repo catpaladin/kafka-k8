@@ -2,7 +2,6 @@ FROM golang:1.11.2 as build
 
 # install dependencies
 RUN go get github.com/Shopify/sarama
-RUN go get github.com/wvanbergen/kafka/consumergroup
 
 # copy app
 COPY . /app

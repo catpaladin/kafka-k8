@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: consumer
-        image: catpaladin/consumer@sha256:c108a5c4ff3976223623f35f573cdf145298656d5f4269edf1d6c04460b8547b
+        image: catpaladin/consumer@sha256:7a29f53811c0a9e34347adb0594f6b4712ccbae1235ca64e4b4f8299ab0aa72a
         command: ["sh", "-c", "tail -f /dev/null"]
         resources:
           requests:
@@ -24,11 +24,9 @@ spec:
             cpu: 10m
             memory: 200Mi
         env:
-          - name: ZOOKEEPER_HOST
-            value: zookeeper.kafka
-          - name: ZOOKEEPER_PORT
-            value: "2181"
-          - name: CONSUMER_GROUP
-            value: zbanana
+          - name: KAFKA_HOST
+            value: bootstrap.kafka
+          - name: KAFKA_PORT
+            value: "9092"
           - name: KAFKA_TOPIC
             value: banana
