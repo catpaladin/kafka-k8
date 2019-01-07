@@ -1,25 +1,33 @@
-# kafka-k8
+# Minikube-kafka example
 
+Run Kafka on Minikube with Go Producers/Consumers. This repo assumes that all requirements are already installed.
+
+#### Requirements
+* Minikube
+* virtualbox
+* Docker
+
+Setup Minikube
+```
+./minikube-start.sh
+```
+
+Create namespaces, storageclass, and RBAC
 ```
 kubectl apply -f ./minikube
+```
+
+Create zookeeper
+```
 kubectl apply -f ./zookeeper
+```
+
+Create kafka
+```
 kubectl apply -f ./kafka
 ```
 
-## Local Test
-
-##### terminal 1
+Create producers/consumers
 ```
-kubectl exec -it kafka-0 -n kafka
-
-# unset port binding & run producer
-unset JMX_PORT; bin/kafka-console-producer.sh --broker-list localhost:9092 --topic mytopic
-```
-
-##### terminal 2
-```
-ubectl exec -it kafka-0 -n kafka
-
-# unset port binding & run consumer
-unset JMX_PORT; bin/kafka-console-consumer.sh --zookeeper zookeeper.kafka.svc.cluster.local:2181 --topic mytopic
+kubectl apply -f ./pubsub
 ```
