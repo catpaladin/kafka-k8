@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: producer
+  namespace: pubsub
+spec:
+  selector:
+    matchLabels:
+      app: producer
+  template:
+    metadata:
+      labels:
+        app: producer
+    spec:
+      containers:
+      - name: producer
+        image: catpaladin/producer@sha256:a59d167535d00ce32a2af274df6eb50b3bf9e1c3e2a807f6db4e49449f595554
+        command: ["sh", "-c", "tail -f /dev/null"]
+        resources:
+          requests:
+            cpu: 10m
+            memory: 100Mi
+          limits:
+            cpu: 10m
+            memory: 200Mi
+        env:
+          - name: KAFKA_HOST
+            value: bootstrap.kafka
+          - name: KAFKA_PORT
+            value: "9092"
+          - name: KAFKA_TOPIC
+            value: banana
